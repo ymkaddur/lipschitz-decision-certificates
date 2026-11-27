@@ -39,6 +39,8 @@ Open questions:
 |--------|-----------|--------|
 | `CompositionalCertificates` | certified pairs (`J ± Q` PSD) are closed under Kronecker products; two-factor sign expansions; nulled interfaces survive | [L-known] |
 | | claim "factor certificates imply a certificate of the ordinary product" | **refuted** |
+| | sequential composition: a shared certificate `P - FᵢᴴPFᵢ ⪰ 0` composes | [L-known] |
+| | claim "separately stable factors compose" (nilpotent factors, product grows like `4^k`, no common certificate) | **refuted** |
 
 Statement, proof, counterexample and limitations:
 [docs/compositional-certificates.md](docs/compositional-certificates.md).

@@ -21,6 +21,14 @@ For factors `J_i, Q_i`, with `A_i = (J_i + Q_i)/2` and `B_i = (J_i - Q_i)/2`, tw
 * `ordinary_product_fails` (**refutation**): the principle does not transfer to ordinary products.
   There are `J_i ± Q_i` with nonnegative quadratic forms for which `J₁ J₂ - Q₁ Q₂` is neither
   symmetric nor nonnegative.
+
+For sequential composition the certificate has to be shared:
+
+* `shared_lyapunov_mul`: if `P - Fᵢᴴ P Fᵢ` is positive semidefinite for both factors with the
+  *same* `P`, it is for `F₁ F₂` (a common quadratic certificate, i.e. a compatible norm);
+* `stable_factors_unstable_product` (**refutation**): two nilpotent factors (every trajectory of
+  each vanishes after two steps) whose product has the eigenvalue `4`;
+* `no_common_certificate`: hence that pair admits no positive definite common certificate.
 -/
 
 namespace LipschitzDecision.Compositional
@@ -120,5 +128,54 @@ theorem ordinary_product_fails :
   · rw [e5]
     simp [dotProduct, mulVec, Fin.sum_univ_two]
     norm_num
+
+/-- **A shared transition certificate composes**: if `P - Fᵢᴴ P Fᵢ` is PSD for both factors with the
+same `P`, then so is `P - (F₁ F₂)ᴴ P (F₁ F₂)`. -/
+theorem shared_lyapunov_mul (P F₁ F₂ : Matrix m m ℝ) (h₁ : (P - F₁ᴴ * P * F₁).PosSemidef)
+    (h₂ : (P - F₂ᴴ * P * F₂).PosSemidef) : (P - (F₁ * F₂)ᴴ * P * (F₁ * F₂)).PosSemidef := by
+  have e : P - (F₁ * F₂)ᴴ * P * (F₁ * F₂) =
+      (P - F₂ᴴ * P * F₂) + F₂ᴴ * (P - F₁ᴴ * P * F₁) * F₂ := by
+    rw [conjTranspose_mul]
+    simp only [Matrix.mul_sub, Matrix.sub_mul, Matrix.mul_assoc]
+    abel
+  rw [e]
+  exact h₂.add (h₁.conjTranspose_mul_mul_same F₂)
+
+/-- **Refutation for sequential composition without a shared certificate**: both factors are
+nilpotent, yet the entry `(0, 0)` of `(A₁ A₂)^k` is `4^k`. -/
+theorem stable_factors_unstable_product :
+    let A₁ : Matrix (Fin 2) (Fin 2) ℝ := !![0, 2; 0, 0]
+    let A₂ : Matrix (Fin 2) (Fin 2) ℝ := !![0, 0; 2, 0]
+    A₁ * A₁ = 0 ∧ A₂ * A₂ = 0 ∧ ∀ k : ℕ, ((A₁ * A₂) ^ k) 0 0 = 4 ^ k := by
+  intro A₁ A₂
+  have hp : A₁ * A₂ = !![4, 0; 0, 0] := by
+    ext i j; fin_cases i <;> fin_cases j <;> norm_num [A₁, A₂, Matrix.mul_apply, Fin.sum_univ_two]
+  refine ⟨?_, ?_, fun k => ?_⟩
+  · ext i j; fin_cases i <;> fin_cases j <;> simp [A₁, Matrix.mul_apply, Fin.sum_univ_two]
+  · ext i j; fin_cases i <;> fin_cases j <;> simp [A₂, Matrix.mul_apply, Fin.sum_univ_two]
+  · rw [hp]
+    induction k with
+    | zero => simp
+    | succ k ih =>
+      rw [pow_succ, Matrix.mul_apply, Fin.sum_univ_two, ih]
+      simp [pow_succ]
+
+/-- The nilpotent pair has no positive definite common certificate. -/
+theorem no_common_certificate :
+    let A₁ : Matrix (Fin 2) (Fin 2) ℝ := !![0, 2; 0, 0]
+    let A₂ : Matrix (Fin 2) (Fin 2) ℝ := !![0, 0; 2, 0]
+    ∀ P : Matrix (Fin 2) (Fin 2) ℝ, P.PosDef →
+      ¬ ((P - A₁ᴴ * P * A₁).PosSemidef ∧ (P - A₂ᴴ * P * A₂).PosSemidef) := by
+  intro A₁ A₂ P hP h
+  have hp : A₁ * A₂ = !![4, 0; 0, 0] := by
+    ext i j; fin_cases i <;> fin_cases j <;> norm_num [A₁, A₂, Matrix.mul_apply, Fin.sum_univ_two]
+  have hq := (shared_lyapunov_mul P A₁ A₂ h.1 h.2).dotProduct_mulVec_nonneg ![1, 0]
+  have hpos := hP.dotProduct_mulVec_pos (x := ![1, 0]) (by
+    intro h0
+    have := congrFun h0 0
+    simp at this)
+  rw [hp] at hq
+  simp [dotProduct, mulVec, Fin.sum_univ_two, Matrix.mul_apply, Matrix.sub_apply] at hq hpos
+  linarith
 
 end LipschitzDecision.Compositional

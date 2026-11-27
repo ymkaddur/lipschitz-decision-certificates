@@ -35,6 +35,16 @@ semidefinite (Mathlib `Matrix.PosSemidef.kronecker`).
 quadratic forms, yet `J₁ J₂ - Q₁ Q₂ = !![1,0;-1,0]` is not symmetric and its quadratic form is `-1`
 at `(1, 2)`. Tensor composition (independent factors) is not sequential composition.
 
+## Sequential composition
+
+Tensor composition multiplies independent factors. Sequential composition does not, and what
+transfers is a *shared* certificate: if `P - F₁ᴴ P F₁` and `P - F₂ᴴ P F₂` are positive semidefinite
+for the same `P`, so is `P - (F₁F₂)ᴴ P (F₁F₂)`, because the difference splits as
+`(P - F₂ᴴPF₂) + F₂ᴴ (P - F₁ᴴPF₁) F₂`. For a positive definite `P` this says that both factors, and
+hence the product, are contractions in the norm `‖x‖_P`. Separate certificates do not compose:
+`A₁ = !![0,2;0,0]` and `A₂ = !![0,0;2,0]` are nilpotent, yet `A₁A₂ = !![4,0;0,0]`, so no positive
+definite `P` certifies both.
+
 ## Formalization
 
 `LipschitzDecision/CompositionalCertificates.lean`
@@ -48,13 +58,16 @@ at `(1, 2)`. Tensor composition (independent factors) is not sequential composit
 | [L-known] | tensor difference PSD from explicit Gram certificates of the factors | `kron_psd_of_gram_certificates` |
 | [L-known] | nulled interfaces survive tensor composition | `kron_interface_kernel` |
 | **refuted** | "factor certificates imply a certificate of the ordinary product" | `ordinary_product_fails` |
+| [L-known] | a shared certificate `P - FᵢᴴPFᵢ ⪰ 0` composes under products | `shared_lyapunov_mul` |
+| **refuted** | "separately stable factors compose": nilpotent factors whose product grows like `4^k` | `stable_factors_unstable_product` |
+| [L-known] | that pair has no positive definite common certificate | `no_common_certificate` |
 
 ## Limitations
 
 * The `n`-factor statement follows by iterating `certifiedPair_kron`; it is not stated as a single
   theorem over heterogeneous index types.
-* Sufficient conditions for sequential or nonlinear compositions (commuting factors, simulation
-  relations, positive cones preserved by each stage) are **open** here.
+* For sequential composition only the shared quadratic certificate is formalized. Commuting factors,
+  simulation relations, positive cones and nonlinear stages are **open** here.
 
 ## Verification
 
