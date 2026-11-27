@@ -33,6 +33,16 @@ Open questions:
 - **open**: the minimum per-layer precision (bits) that satisfies the weight budget for a given margin
   distribution.
 
+## Compositional certificates
+
+| Module | Statement | Status |
+|--------|-----------|--------|
+| `CompositionalCertificates` | certified pairs (`J ± Q` PSD) are closed under Kronecker products; two-factor sign expansions; nulled interfaces survive | [L-known] |
+| | claim "factor certificates imply a certificate of the ordinary product" | **refuted** |
+
+Statement, proof, counterexample and limitations:
+[docs/compositional-certificates.md](docs/compositional-certificates.md).
+
 ## Reproduce
 
 ```bash
